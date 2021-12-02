@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "format": "prettier --write \"./src/**/*.ts\"",
+    "format": "pretty-quick",
     "start": "npm run format && ts-node ./src/$DAY"
   },
   "author": "",
@@ -15,6 +15,7 @@
     "typescript": "^4.5.2"
   },
   "devDependencies": {
-    "prettier": "^2.5.0"
+    "prettier": "^2.5.0",
+    "pretty-quick": "^3.1.2"
   }
 }

@@ -1,9 +1,9 @@
 import * as path from "path";
-import * as fs from "fs";
+import { intRange, readTextFileSync } from "../common";
 
 const InputFilePath = path.join(__dirname, "input.txt");
 
-const input: string = fs.readFileSync(InputFilePath, { encoding: "utf8" });
+const input: string = readTextFileSync(InputFilePath);
 
 const inputValues: number[] = input.split("\n").map((value) => Number(value));
 
@@ -35,29 +35,25 @@ const countNumberOfTimesIncreased = (values: number[]): number => {
 
 console.log(`1: ${countNumberOfTimesIncreased(inputValues)}`);
 
-const intRange = (count: number): number[] => {
-  return Array(count)
-    .fill(0)
-    .map((value, index) => index);
-};
-
 const SumCount = 3;
 
-const sums: number[] = inputValues.reduce(
-  (sums: number[], value: number, index: number, allValues: number[]) => {
-    if (index < SumCount) {
-      return [];
-    } else {
-      return [
-        ...sums,
-        intRange(SumCount).reduce(
-          (sum, rangeIndex) => sum + allValues[index - rangeIndex],
-          0
-        ),
-      ];
-    }
-  },
-  []
-);
+const sumsReducer = (
+  sums: number[],
+  value: number,
+  index: number,
+  allValues: number[]
+): number[] => {
+  if (index < SumCount) {
+    return [];
+  } else {
+    const values: number[] = intRange(SumCount).map(
+      (rangeIndex) => allValues[index - rangeIndex]
+    );
+    const sum: number = values.reduce((sum, value) => sum + value, 0);
+    return [...sums, sum];
+  }
+};
+
+const sums: number[] = inputValues.reduce(sumsReducer, []);
 
 console.log(`2: ${countNumberOfTimesIncreased(sums)}`);

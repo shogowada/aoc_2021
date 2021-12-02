@@ -1,11 +1,9 @@
 import * as path from "path";
-import * as fs from "fs";
+import { readTextFileSync } from "../common";
 
 const InputFilePath = path.join(__dirname, "input.txt");
 
-const inputFileContent: string = fs.readFileSync(InputFilePath, {
-  encoding: "utf8",
-});
+const inputFileContent: string = readTextFileSync(InputFilePath);
 
 const inputRows: string[] = inputFileContent.split("\n");
 
