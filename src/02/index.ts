@@ -1,11 +1,9 @@
 import * as path from "path";
-import { readTextFileSync } from "../common";
+import { readTextFileRowsSync } from "../common";
 
 const InputFilePath = path.join(__dirname, "input.txt");
 
-const inputFileContent: string = readTextFileSync(InputFilePath);
-
-const inputRows: string[] = inputFileContent.split("\n");
+const inputRows: string[] = readTextFileRowsSync(InputFilePath);
 
 interface State {
   aim: number;

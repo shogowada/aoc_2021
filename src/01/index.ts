@@ -1,11 +1,11 @@
 import * as path from "path";
-import { intRange, readTextFileSync } from "../common";
+import { intRange, readTextFileRowsSync } from "../common";
 
 const InputFilePath = path.join(__dirname, "input.txt");
 
-const input: string = readTextFileSync(InputFilePath);
-
-const inputValues: number[] = input.split("\n").map((value) => Number(value));
+const inputValues: number[] = readTextFileRowsSync(InputFilePath).map((value) =>
+  Number(value)
+);
 
 console.log(`Number of input values: ${inputValues.length}`);
 
