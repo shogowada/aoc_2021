@@ -15,27 +15,24 @@ const countNumberOfTimesIncreased = (values: number[]): number => {
     prev: number | null;
   }
 
-  return values.reduce(
-    ({ count, prev }: Result, value: number): Result => {
-      if (prev === null || value <= prev) {
-        return {
-          count,
-          prev: value,
-        };
-      } else {
-        return {
-          count: count + 1,
-          prev: value,
-        };
-      }
-    },
-    { count: 0, prev: null }
-  ).count;
+  const resultReducer = ({ count, prev }: Result, value: number): Result => {
+    if (prev === null || value <= prev) {
+      return {
+        count,
+        prev: value,
+      };
+    } else {
+      return {
+        count: count + 1,
+        prev: value,
+      };
+    }
+  };
+
+  return values.reduce(resultReducer, { count: 0, prev: null }).count;
 };
 
 console.log(`1: ${countNumberOfTimesIncreased(inputValues)}`);
-
-const SumCount = 3;
 
 const sumsReducer = (
   sums: number[],
@@ -43,10 +40,12 @@ const sumsReducer = (
   index: number,
   allValues: number[]
 ): number[] => {
-  if (index < SumCount) {
+  const SumRangeLength = 3;
+
+  if (index < SumRangeLength) {
     return [];
   } else {
-    const values: number[] = intRange(SumCount).map(
+    const values: number[] = intRange(SumRangeLength).map(
       (rangeIndex) => allValues[index - rangeIndex]
     );
     const sum: number = values.reduce((sum, value) => sum + value, 0);
