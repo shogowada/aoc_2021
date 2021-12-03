@@ -16,15 +16,17 @@ const createRowsReducer =
   (rows: string[], index: number): string[] => {
     if (rows.length === 1) {
       return rows;
-    }
-
-    const oneCount: number = rows.filter((row) => row[index] === `1`).length;
-
-    if (oneCount >= rows.length / 2) {
-      return rows.filter((row) => row[index] === `${majorityDigit}`);
     } else {
-      return rows.filter(
-        (row) => row[index] === `${majorityDigit === 0 ? 1 : 0}`
-      );
+      const oneCountForIndex: number = rows.filter(
+        (row) => row[index] === `1`
+      ).length;
+
+      if (oneCountForIndex >= rows.length / 2) {
+        return rows.filter((row) => row[index] === `${majorityDigit}`);
+      } else {
+        return rows.filter(
+          (row) => row[index] === `${majorityDigit === 0 ? 1 : 0}`
+        );
+      }
     }
   };
