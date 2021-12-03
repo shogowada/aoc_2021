@@ -1,13 +1,11 @@
-import { intRange } from "../common";
+import { flipDigit } from "./flip-digit";
 
 export const createRate = (rows: string[], majorityDigit: number): number => {
-  const totalCount: number = rows.length;
-
   const oneCounts: number[] = createOneCounts(rows);
 
   const rateAsString: string = createRateAsString(
     oneCounts,
-    totalCount,
+    rows.length,
     majorityDigit
   );
 
@@ -32,17 +30,16 @@ const oneCountsReducer = (oneCounts: number[], row: string): number[] => {
 
 const createRateAsString = (
   oneCounts: number[],
-  totalCount: number,
+  rowCount: number,
   majorityDigit: number
 ): string => {
-  const halfCount: number = totalCount / 2;
-
   return oneCounts
     .map((oneCount) => {
-      if (oneCount >= halfCount) {
-        return `${majorityDigit}`;
+      const isOneMajority = oneCount >= rowCount / 2;
+      if (isOneMajority) {
+        return String(majorityDigit);
       } else {
-        return `${majorityDigit === 0 ? 1 : 0}`;
+        return String(flipDigit(majorityDigit));
       }
     })
     .join("");

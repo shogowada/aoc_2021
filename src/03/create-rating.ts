@@ -1,4 +1,5 @@
 import { intRange } from "../common";
+import { flipDigit } from "./flip-digit";
 
 export const createRating = (rows: string[], majorityDigit: number): number => {
   const digitCount: number = rows[0].length;
@@ -21,11 +22,12 @@ const createRowsReducer =
         (row) => row[index] === `1`
       ).length;
 
-      if (oneCountForIndex >= rows.length / 2) {
-        return rows.filter((row) => row[index] === `${majorityDigit}`);
+      const isOneMajority = oneCountForIndex >= rows.length / 2;
+      if (isOneMajority) {
+        return rows.filter((row) => row[index] === String(majorityDigit));
       } else {
         return rows.filter(
-          (row) => row[index] === `${majorityDigit === 0 ? 1 : 0}`
+          (row) => row[index] === String(flipDigit(majorityDigit))
         );
       }
     }
