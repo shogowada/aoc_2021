@@ -7,61 +7,43 @@ export interface DrawnNumbersAndBoards {
   boards: Board[];
 }
 
-export const calculateLastWinnerScore = ({
-  drawnNumbers,
-  boards,
-}: DrawnNumbersAndBoards): number => {
-  const wonBoards: WonBoard[] = mapToWonBoards({ drawnNumbers, boards });
-
-  const lastWonBoard: WonBoard = wonBoards.reduce((lhs, rhs) => {
-    if (lhs.drawnNumbers.length > rhs.drawnNumbers.length) {
-      return lhs;
-    } else {
-      return rhs;
-    }
-  });
-
-  return calculateScoreForBoard(lastWonBoard.board, lastWonBoard.drawnNumbers);
-};
-
-export const calculateScore = ({
-  drawnNumbers,
-  boards,
-}: DrawnNumbersAndBoards): number => {
-  const wonBoards: WonBoard[] = mapToWonBoards({ drawnNumbers, boards });
-
-  const firstWonBoard: WonBoard = wonBoards.reduce((lhs, rhs) => {
-    if (lhs.drawnNumbers.length < rhs.drawnNumbers.length) {
-      return lhs;
-    } else {
-      return rhs;
-    }
-  });
-
-  return calculateScoreForBoard(
-    firstWonBoard.board,
-    firstWonBoard.drawnNumbers
+export const calculateLastWinnerScore = (
+  drawnNumbersAndBoards: DrawnNumbersAndBoards
+): number => {
+  const winnerBoards: WinnerBoard[] = mapToWinnerBoardsInWonOrder(
+    drawnNumbersAndBoards
   );
+  return mapWinnerBoardToScore(winnerBoards[winnerBoards.length - 1]);
 };
 
-const mapToWonBoards = ({
+export const calculateFirstWinnerScore = (
+  drawnNumbersAndBoards: DrawnNumbersAndBoards
+): number => {
+  const winnerBoards: WinnerBoard[] = mapToWinnerBoardsInWonOrder(
+    drawnNumbersAndBoards
+  );
+  return mapWinnerBoardToScore(winnerBoards[0]);
+};
+
+const mapToWinnerBoardsInWonOrder = ({
   drawnNumbers,
   boards,
-}: DrawnNumbersAndBoards): WonBoard[] => {
+}: DrawnNumbersAndBoards): WinnerBoard[] => {
   return boards
-    .map((board) => mapToWonBoard(drawnNumbers, board))
-    .filter(isNonNull);
+    .map((board) => mapToWinnerBoard(drawnNumbers, board))
+    .filter(isNonNull)
+    .sort((lhs, rhs) => lhs.drawnNumbers.length - rhs.drawnNumbers.length);
 };
 
-interface WonBoard {
+interface WinnerBoard {
   board: Board;
   drawnNumbers: number[];
 }
 
-const mapToWonBoard = (
+const mapToWinnerBoard = (
   drawnNumbers: number[],
   board: Board
-): WonBoard | null => {
+): WinnerBoard | null => {
   interface State {
     won: boolean;
     wonDrawnNumbers: number[];
@@ -89,47 +71,6 @@ const mapToWonBoard = (
   }
 };
 
-interface State {
-  drawnNumbers: number[];
-  score: number | null;
-}
-
-const createStateReducer =
-  (boards: Board[]) =>
-  ({ drawnNumbers, score }: State, drawnNumber: number): State => {
-    if (score !== null) {
-      return {
-        drawnNumbers,
-        score,
-      };
-    } else {
-      const currentDrawnNumbers: number[] = [...drawnNumbers, drawnNumber];
-      const wonBoard: Board | null = getWinnerBoard(
-        boards,
-        currentDrawnNumbers
-      );
-
-      if (wonBoard) {
-        return {
-          drawnNumbers: currentDrawnNumbers,
-          score: calculateScoreForBoard(wonBoard, currentDrawnNumbers),
-        };
-      } else {
-        return {
-          drawnNumbers: currentDrawnNumbers,
-          score: null,
-        };
-      }
-    }
-  };
-
-const getWinnerBoard = (
-  boards: Board[],
-  drawnNumbers: number[]
-): Board | null => {
-  return boards.find((board) => hasBoardWon(board, drawnNumbers)) || null;
-};
-
 const hasBoardWon = (board: Board, drawnNumbers: number[]): boolean => {
   const anyRowMarked: boolean = board.some((row) =>
     row.every((number) => drawnNumbers.includes(number))
@@ -145,10 +86,10 @@ const anyColumnMarked = (board: Board, drawnNumbers: number[]): boolean => {
   });
 };
 
-const calculateScoreForBoard = (
-  board: Board,
-  drawnNumbers: number[]
-): number => {
+const mapWinnerBoardToScore = ({
+  drawnNumbers,
+  board,
+}: WinnerBoard): number => {
   const sumOfUnmarkedNumbers: number = board
     .flat()
     .filter((number) => !drawnNumbers.includes(number))
