@@ -1,5 +1,4 @@
-import { intRange } from "../common";
-import { BroadcastChannel } from "worker_threads";
+import { intRange, isNonNull } from "../common";
 
 export type Board = number[][];
 
@@ -8,15 +7,86 @@ export interface DrawnNumbersAndBoards {
   boards: Board[];
 }
 
+export const calculateLastWinnerScore = ({
+  drawnNumbers,
+  boards,
+}: DrawnNumbersAndBoards): number => {
+  const wonBoards: WonBoard[] = mapToWonBoards({ drawnNumbers, boards });
+
+  const lastWonBoard: WonBoard = wonBoards.reduce((lhs, rhs) => {
+    if (lhs.drawnNumbers.length > rhs.drawnNumbers.length) {
+      return lhs;
+    } else {
+      return rhs;
+    }
+  });
+
+  return calculateScoreForBoard(lastWonBoard.board, lastWonBoard.drawnNumbers);
+};
+
 export const calculateScore = ({
   drawnNumbers,
   boards,
 }: DrawnNumbersAndBoards): number => {
-  const state = drawnNumbers.reduce(createStateReducer(boards), {
-    drawnNumbers: [],
-    score: null,
+  const wonBoards: WonBoard[] = mapToWonBoards({ drawnNumbers, boards });
+
+  const firstWonBoard: WonBoard = wonBoards.reduce((lhs, rhs) => {
+    if (lhs.drawnNumbers.length < rhs.drawnNumbers.length) {
+      return lhs;
+    } else {
+      return rhs;
+    }
   });
-  return state.score!;
+
+  return calculateScoreForBoard(
+    firstWonBoard.board,
+    firstWonBoard.drawnNumbers
+  );
+};
+
+const mapToWonBoards = ({
+  drawnNumbers,
+  boards,
+}: DrawnNumbersAndBoards): WonBoard[] => {
+  return boards
+    .map((board) => mapToWonBoard(drawnNumbers, board))
+    .filter(isNonNull);
+};
+
+interface WonBoard {
+  board: Board;
+  drawnNumbers: number[];
+}
+
+const mapToWonBoard = (
+  drawnNumbers: number[],
+  board: Board
+): WonBoard | null => {
+  interface State {
+    won: boolean;
+    wonDrawnNumbers: number[];
+  }
+
+  const { won, wonDrawnNumbers } = drawnNumbers.reduce(
+    ({ won, wonDrawnNumbers }: State, drawnNumber: number): State => {
+      if (won) {
+        return { won, wonDrawnNumbers };
+      } else {
+        const currentDrawnNumbers: number[] = [...wonDrawnNumbers, drawnNumber];
+        return {
+          won: hasBoardWon(board, currentDrawnNumbers),
+          wonDrawnNumbers: currentDrawnNumbers,
+        };
+      }
+    },
+    { won: false, wonDrawnNumbers: [] }
+  );
+
+  if (won) {
+    return { board, drawnNumbers: wonDrawnNumbers };
+  } else {
+    return null;
+  }
 };
 
 interface State {
