@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "format": "pretty-quick",
-    "start": "npm run format && ts-node ./src/$DAY"
+    "start": "npm run format && ts-node ./src/$DAY",
+    "test": "npm run format && mocha --require ts-node/register \"./src/**/*.spec.ts\""
   },
   "author": "",
   "license": "UNLICENSED",
@@ -15,6 +16,10 @@
     "typescript": "^4.5.2"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.22",
+    "@types/mocha": "^9.0.0",
+    "chai": "^4.3.4",
+    "mocha": "^9.1.3",
     "prettier": "^2.5.0",
     "pretty-quick": "^3.1.2"
   }
