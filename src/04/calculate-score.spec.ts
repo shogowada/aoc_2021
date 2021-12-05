@@ -8,7 +8,7 @@ import {
 } from "./calculate-score";
 import { readDrawnNumbersAndBoards } from "./read-drawn-numbers-and-boards";
 
-describe("calculate-score", () => {
+describe("day 04: calculate-score", () => {
   describe("using test input", () => {
     let drawnNumbersAndBoards: DrawnNumbersAndBoards;
 

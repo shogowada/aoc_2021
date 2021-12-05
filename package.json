@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "format": "pretty-quick",
-    "start": "npm run format && ts-node ./src/$DAY",
     "test": "npm run format && mocha --require ts-node/register \"./src/**/*.spec.ts\""
   },
   "author": "",
