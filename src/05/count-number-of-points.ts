@@ -38,7 +38,7 @@ const mapRowsToVectors = (rows: string[]): Vector[] => {
 
 const createMap = (vectors: Vector[]): number[][] => {
   const maxX: number = Math.max(
-    ...vectors.flatMap((vector) => [vector.from.x, vector.to.y])
+    ...vectors.flatMap((vector) => [vector.from.x, vector.to.x])
   );
   const maxY: number = Math.max(
     ...vectors.flatMap((vector) => [vector.from.y, vector.to.y])
@@ -47,30 +47,36 @@ const createMap = (vectors: Vector[]): number[][] => {
   const xLength = maxX + 1;
   const yLength = maxY + 1;
 
+  const points: Point[] = mapVectorsToPoints(vectors);
+
   const map: number[][] = Array(yLength)
     .fill(0)
     .map(() => Array(xLength).fill(0));
 
-  vectors.forEach((vector) => addPointsToMap(map, vector));
+  points.forEach((point) => (map[point.y][point.x] += 1));
 
   return map;
 };
 
-const addPointsToMap = (map: number[][], vector: Vector): void => {
+const mapVectorsToPoints = (vectors: Vector[]): Point[] => {
+  return vectors.flatMap(mapVectorToPoints);
+};
+
+const mapVectorToPoints = (vector: Vector): Point[] => {
   if (vector.from.x === vector.to.x) {
     const fromY = Math.min(vector.from.y, vector.to.y);
     const toY = Math.max(vector.from.y, vector.to.y);
 
-    intRange(fromY, toY + 1).forEach((y) => {
-      map[y][vector.from.x] += 1;
-    });
+    return intRange(fromY, toY + 1).map(
+      (y): Point => ({ x: vector.from.x, y })
+    );
   } else if (vector.from.y === vector.to.y) {
     const fromX = Math.min(vector.from.x, vector.to.x);
     const toX = Math.max(vector.from.x, vector.to.x);
 
-    intRange(fromX, toX + 1).forEach((x) => {
-      map[vector.from.y][x] += 1;
-    });
+    return intRange(fromX, toX + 1).map(
+      (x): Point => ({ x, y: vector.from.y })
+    );
   } else if (
     Math.abs(vector.from.x - vector.to.x) ===
     Math.abs(vector.from.y - vector.to.y)
@@ -78,14 +84,13 @@ const addPointsToMap = (map: number[][], vector: Vector): void => {
     const from: Point = vector.from.x < vector.to.x ? vector.from : vector.to;
     const to: Point = vector.from.x < vector.to.x ? vector.to : vector.from;
 
-    if (from.y < to.y) {
-      intRange(to.x - from.x + 1).forEach((delta) => {
-        map[from.y + delta][from.x + delta] += 1;
-      });
-    } else {
-      intRange(to.x - from.x + 1).forEach((delta) => {
-        map[from.y - delta][from.x + delta] += 1;
-      });
-    }
+    return intRange(to.x - from.x + 1).map(
+      (delta): Point => ({
+        x: from.x + delta,
+        y: from.y + (from.y < to.y ? delta : -delta),
+      })
+    );
+  } else {
+    return [];
   }
 };
