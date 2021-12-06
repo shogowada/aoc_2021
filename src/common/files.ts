@@ -1,6 +1,6 @@
 import * as fs from "fs";
 
-const readTextFileSync = (path: string): string => {
+export const readTextFileSync = (path: string): string => {
   return fs.readFileSync(path, { encoding: "utf8" });
 };
 
