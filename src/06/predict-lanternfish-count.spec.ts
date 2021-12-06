@@ -4,10 +4,10 @@ import { expect } from "chai";
 import { readTextFileSync } from "../common";
 import { predictLanternfishCount } from "./predict-lanternfish-count";
 
-describe("predict-lanternfish-count", () => {
+describe("day 06: predict-lanternfish-count", () => {
   [
-    { inputFileName: "input.test.txt", count: 5934 },
-    { inputFileName: "input.txt", count: 374927 },
+    { inputFileName: "input.test.txt", count: 26984457539 },
+    { inputFileName: "input.txt", count: 1687617803407 },
   ].forEach(({ inputFileName, count }) => {
     it(`should predict ${count} for ${inputFileName}`, () => {
       const initialDaysToReproduceAsString: string = readTextFileSync(
@@ -16,9 +16,9 @@ describe("predict-lanternfish-count", () => {
       const initialDaysToReproduce: number[] = initialDaysToReproduceAsString
         .split(",")
         .map(Number);
-      expect(predictLanternfishCount(initialDaysToReproduce, 80)).to.deep.equal(
-        count
-      );
+      expect(
+        predictLanternfishCount(initialDaysToReproduce, 256)
+      ).to.deep.equal(count);
     });
   });
 });

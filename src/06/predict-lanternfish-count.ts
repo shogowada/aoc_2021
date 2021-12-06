@@ -7,26 +7,29 @@ export const predictLanternfishCount = (
   initialDaysToReproduce: number[],
   numberOfDays: number
 ): number => {
-  return intRange(numberOfDays).reduce(
-    daysToReproduceReducer,
-    initialDaysToReproduce
-  ).length;
+  let countByIndex: number[] = Array(
+    NumberOfDaysToReproduceForNewborn + 1
+  ).fill(0);
+  initialDaysToReproduce.forEach((days) => {
+    countByIndex[days] += 1;
+  });
+  intRange(numberOfDays).forEach(() => {
+    countByIndex = daysToReproduceReducer(countByIndex);
+  });
+  return Object.values(countByIndex).reduce((lhs, rhs) => lhs + rhs, 0);
 };
 
-const daysToReproduceReducer = (daysToReproduce: number[]): number[] => {
-  const aboutToBare: number[] = [];
-  const noChange: number[] = [];
-  daysToReproduce.forEach((daysToReproduce) => {
-    if (daysToReproduce) {
-      noChange.push(daysToReproduce);
-    } else {
-      aboutToBare.push(daysToReproduce);
+const daysToReproduceReducer = (countByIndex: number[]): number[] => {
+  const aboutToBareCount: number = countByIndex[0];
+
+  intRange(NumberOfDaysToReproduceForNewborn + 1).forEach((days) => {
+    if (days + 1 < countByIndex.length) {
+      countByIndex[days] = countByIndex[days + 1];
     }
   });
 
-  return [
-    ...noChange.map((daysToReproduce) => daysToReproduce - 1),
-    ...Array(aboutToBare.length).fill(NumberOfDaysToReproduceForAdult),
-    ...Array(aboutToBare.length).fill(NumberOfDaysToReproduceForNewborn),
-  ];
+  countByIndex[NumberOfDaysToReproduceForNewborn] = aboutToBareCount;
+  countByIndex[NumberOfDaysToReproduceForAdult] += aboutToBareCount;
+
+  return countByIndex;
 };
