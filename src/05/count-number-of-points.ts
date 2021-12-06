@@ -37,24 +37,22 @@ const mapRowsToVectors = (rows: string[]): Vector[] => {
 };
 
 const createMap = (vectors: Vector[]): number[][] => {
-  const maxX: number = Math.max(
-    ...vectors.flatMap((vector) => [vector.from.x, vector.to.x])
+  const max: number = Math.max(
+    ...vectors.flatMap((vector) => [
+      vector.from.x,
+      vector.from.y,
+      vector.to.x,
+      vector.to.y,
+    ])
   );
-  const maxY: number = Math.max(
-    ...vectors.flatMap((vector) => [vector.from.y, vector.to.y])
-  );
+  const dimension = max + 1;
 
-  const xLength = maxX + 1;
-  const yLength = maxY + 1;
+  const map: number[][] = Array(dimension)
+    .fill(0)
+    .map(() => Array(dimension).fill(0));
 
   const points: Point[] = mapVectorsToPoints(vectors);
-
-  const map: number[][] = Array(yLength)
-    .fill(0)
-    .map(() => Array(xLength).fill(0));
-
   points.forEach((point) => (map[point.y][point.x] += 1));
-
   return map;
 };
 
