@@ -6,8 +6,8 @@ import { countNumberOfPoints } from "./count-number-of-points";
 
 describe("day 05: count-number-of-points", () => {
   [
-    { inputFileName: "input.test.txt", point: 5 },
-    { inputFileName: "input.txt", point: 6113 },
+    { inputFileName: "input.test.txt", point: 12 },
+    { inputFileName: "input.txt", point: 20373 },
   ].forEach(({ inputFileName, point }) => {
     let rows: string[];
 

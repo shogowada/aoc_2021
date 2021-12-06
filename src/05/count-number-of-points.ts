@@ -71,5 +71,21 @@ const addPointsToMap = (map: number[][], vector: Vector): void => {
     intRange(fromX, toX + 1).forEach((x) => {
       map[vector.from.y][x] += 1;
     });
+  } else if (
+    Math.abs(vector.from.x - vector.to.x) ===
+    Math.abs(vector.from.y - vector.to.y)
+  ) {
+    const from: Point = vector.from.x < vector.to.x ? vector.from : vector.to;
+    const to: Point = vector.from.x < vector.to.x ? vector.to : vector.from;
+
+    if (from.y < to.y) {
+      intRange(to.x - from.x + 1).forEach((delta) => {
+        map[from.y + delta][from.x + delta] += 1;
+      });
+    } else {
+      intRange(to.x - from.x + 1).forEach((delta) => {
+        map[from.y - delta][from.x + delta] += 1;
+      });
+    }
   }
 };
