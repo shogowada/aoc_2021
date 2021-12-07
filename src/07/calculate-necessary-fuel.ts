@@ -15,6 +15,8 @@ const calculateNecessaryFuelToAlignTo = (
   positionToAlignTo: number
 ): number => {
   return positions.reduce((necessaryFuel: number, position) => {
-    return necessaryFuel + Math.abs(position - positionToAlignTo);
+    const difference = Math.abs(position - positionToAlignTo);
+
+    return necessaryFuel + (difference * (difference + 1)) / 2;
   }, 0);
 };

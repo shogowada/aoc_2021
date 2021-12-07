@@ -6,8 +6,8 @@ import { calculateNecessaryFuel } from "./calculate-necessary-fuel";
 
 describe("day 07: calculate-necessary-fuel", () => {
   [
-    { inputFileName: "input.test.txt", fuel: 37 },
-    { inputFileName: "input.txt", fuel: 345035 },
+    { inputFileName: "input.test.txt", fuel: 168 },
+    { inputFileName: "input.txt", fuel: 97038163 },
   ].forEach(({ inputFileName, fuel }) => {
     let positions: number[];
 
