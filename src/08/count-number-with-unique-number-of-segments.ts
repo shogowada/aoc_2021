@@ -114,8 +114,6 @@ const reduceDecodedDigitToEncodedDigitsMap = (
   decodedDigitToEncodedDigitsMap: DecodedDigitToEncodedDigitsMap,
   encodedDigits: string
 ): DecodedDigitToEncodedDigitsMap => {
-  console.log(`encodedDigits: ${encodedDigits}`);
-
   const decodedDigitsWithTheSameLengthList: string[] = Object.keys(
     DecodedDigitsToNumberDictionary
   ).filter((decodedDigits) => decodedDigits.length === encodedDigits.length);
@@ -161,14 +159,6 @@ const reduceDecodedDigitToEncodedDigitsMap = (
             );
         });
     });
-
-  console.log(
-    `post decodedDigitToEncodedDigitsMap: ${JSON.stringify(
-      decodedDigitToEncodedDigitsMap,
-      undefined,
-      2
-    )}`
-  );
 
   return decodedDigitToEncodedDigitsMap;
 };

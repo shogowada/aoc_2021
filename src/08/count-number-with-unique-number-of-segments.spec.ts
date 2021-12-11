@@ -17,7 +17,7 @@ describe("count-number-with-unique-number-of-segments", () => {
     {
       inputFileName: "input.txt",
       expectedNumberWithUniqueNumberOfSegments: 301,
-      expectedSum: 0,
+      expectedSum: 908067,
     },
   ].forEach(
     ({
