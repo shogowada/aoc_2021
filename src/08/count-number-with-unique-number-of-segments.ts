@@ -18,21 +18,17 @@ export const countNumberWithUniqueNumberOfSegments = (
   }, 0);
 };
 
-export const sum = (input: string[]): number => {
-  return input.map(mapRowToNumber).reduce((lhs, rhs) => lhs + rhs, 0);
+export const sumDecodedNumbers = (input: string[]): number => {
+  return input.map(mapRowToDecodedNumber).reduce((lhs, rhs) => lhs + rhs, 0);
 };
 
-interface DecodedDigitToEncodedDigitsMap {
-  [decodedDigit: string]: string[];
-}
+type DecodedDigitToEncodedDigitsRecord = Record<string, string[]>;
 
-interface EncodedDigitToDecodedDigitMap {
-  [encodedDigit: string]: string;
-}
+type EncodedDigitToDecodedDigitRecord = Record<string, string>;
 
 const Digits: string[] = ["a", "b", "c", "d", "e", "f", "g"];
 
-const DecodedDigitsToNumberDictionary: { [digits: string]: number } = {
+const DecodedDigitsToNumberRecord: Record<string, number> = {
   abcefg: 0,
   cf: 1,
   acdeg: 2,
@@ -45,16 +41,16 @@ const DecodedDigitsToNumberDictionary: { [digits: string]: number } = {
   abcdfg: 9,
 };
 
-const InitialDecodedDigitToEncodedDigitsMap = Digits.reduce(
+const InitialDecodedDigitToEncodedDigitsRecord = Digits.reduce(
   (map, digit) => ({ ...map, [digit]: Digits }),
   {}
 );
 
-const mapRowToNumber = (inputRow: string): number => {
+const mapRowToDecodedNumber = (inputRow: string): number => {
   const { encodedDigitsList, resultDigitsList } =
     mapToResultDigitsListAndEncodedDigitsList(inputRow);
 
-  const encodedDigitToDecodedDigitMap: EncodedDigitToDecodedDigitMap =
+  const encodedDigitToDecodedDigitRecord: EncodedDigitToDecodedDigitRecord =
     decodeDigits(encodedDigitsList);
 
   return Number(
@@ -62,7 +58,7 @@ const mapRowToNumber = (inputRow: string): number => {
       .map((encodedDigits) =>
         mapEncodedDigitsToDecodedDigits(
           encodedDigits,
-          encodedDigitToDecodedDigitMap
+          encodedDigitToDecodedDigitRecord
         )
       )
       .map((decodedDigits) => mapDecodedDigitsToNumber(decodedDigits))
@@ -91,46 +87,51 @@ const mapToResultDigitsListAndEncodedDigitsList = (inputRow: string) => {
 
 const decodeDigits = (
   encodedDigitsList: string[],
-  decodedDigitToEncodedDigitsMap: DecodedDigitToEncodedDigitsMap = InitialDecodedDigitToEncodedDigitsMap
-): EncodedDigitToDecodedDigitMap => {
+  decodedDigitToEncodedDigitsRecord: DecodedDigitToEncodedDigitsRecord = InitialDecodedDigitToEncodedDigitsRecord
+): EncodedDigitToDecodedDigitRecord => {
   const fullyDecoded: boolean = Object.values(
-    decodedDigitToEncodedDigitsMap
+    decodedDigitToEncodedDigitsRecord
   ).every((encodedDigits) => encodedDigits.length === 1);
 
   if (fullyDecoded) {
-    return createEncodedDigitToDecodedDigitMap(decodedDigitToEncodedDigitsMap);
+    return createEncodedDigitToDecodedDigitRecord(
+      decodedDigitToEncodedDigitsRecord
+    );
   } else {
-    const nextDecodedDigitToEncodedDigitsMap: DecodedDigitToEncodedDigitsMap =
+    const nextDecodedDigitToEncodedDigitsRecord: DecodedDigitToEncodedDigitsRecord =
       encodedDigitsList.reduce(
-        reduceDecodedDigitToEncodedDigitsMap,
-        decodedDigitToEncodedDigitsMap
+        reduceDecodedDigitToEncodedDigitsRecord,
+        decodedDigitToEncodedDigitsRecord
       );
 
-    return decodeDigits(encodedDigitsList, nextDecodedDigitToEncodedDigitsMap);
+    return decodeDigits(
+      encodedDigitsList,
+      nextDecodedDigitToEncodedDigitsRecord
+    );
   }
 };
 
-const createEncodedDigitToDecodedDigitMap = (
-  decodedDigitToEncodedDigitsMap: DecodedDigitToEncodedDigitsMap
-): EncodedDigitToDecodedDigitMap => {
-  return Object.entries(decodedDigitToEncodedDigitsMap).reduce(
+const createEncodedDigitToDecodedDigitRecord = (
+  decodedDigitToEncodedDigitsRecord: DecodedDigitToEncodedDigitsRecord
+): EncodedDigitToDecodedDigitRecord => {
+  return Object.entries(decodedDigitToEncodedDigitsRecord).reduce(
     (
-      encodedDigitToDecodedDigitMap: EncodedDigitToDecodedDigitMap,
+      encodedDigitToDecodedDigitRecord: EncodedDigitToDecodedDigitRecord,
       [decodedDigit, encodedDigits]
     ) => ({
-      ...encodedDigitToDecodedDigitMap,
+      ...encodedDigitToDecodedDigitRecord,
       [encodedDigits[0]]: decodedDigit,
     }),
     {}
   );
 };
 
-const reduceDecodedDigitToEncodedDigitsMap = (
-  decodedDigitToEncodedDigitsMap: DecodedDigitToEncodedDigitsMap,
+const reduceDecodedDigitToEncodedDigitsRecord = (
+  decodedDigitToEncodedDigitsRecord: DecodedDigitToEncodedDigitsRecord,
   encodedDigits: string
-): DecodedDigitToEncodedDigitsMap => {
+): DecodedDigitToEncodedDigitsRecord => {
   const decodedDigitsWithTheSameLengthList: string[] = Object.keys(
-    DecodedDigitsToNumberDictionary
+    DecodedDigitsToNumberRecord
   ).filter((decodedDigits) => decodedDigits.length === encodedDigits.length);
 
   const commonDecodedDigits: string = decodedDigitsWithTheSameLengthList.reduce(
@@ -145,38 +146,38 @@ const reduceDecodedDigitToEncodedDigitsMap = (
     decodedDigitsWithTheSameLengthList[0]
   );
 
-  decodedDigitToEncodedDigitsMap = commonDecodedDigits
+  decodedDigitToEncodedDigitsRecord = commonDecodedDigits
     .split("")
     .reduce(
       (
-        decodedDigitToEncodedDigitsMap: DecodedDigitToEncodedDigitsMap,
+        decodedDigitToEncodedDigitsRecord: DecodedDigitToEncodedDigitsRecord,
         decodedDigit: string
-      ): DecodedDigitToEncodedDigitsMap => {
+      ): DecodedDigitToEncodedDigitsRecord => {
         return {
-          ...decodedDigitToEncodedDigitsMap,
-          [decodedDigit]: decodedDigitToEncodedDigitsMap[decodedDigit].filter(
-            (encodedDigit) => encodedDigits.includes(encodedDigit)
-          ),
+          ...decodedDigitToEncodedDigitsRecord,
+          [decodedDigit]: decodedDigitToEncodedDigitsRecord[
+            decodedDigit
+          ].filter((encodedDigit) => encodedDigits.includes(encodedDigit)),
         };
       },
-      decodedDigitToEncodedDigitsMap
+      decodedDigitToEncodedDigitsRecord
     );
 
   return filterOutEncodedDigitsForFullyDecodedDigits(
-    decodedDigitToEncodedDigitsMap
+    decodedDigitToEncodedDigitsRecord
   );
 };
 
 const filterOutEncodedDigitsForFullyDecodedDigits = (
-  decodedDigitToEncodedDigitsMap: DecodedDigitToEncodedDigitsMap
-): DecodedDigitToEncodedDigitsMap => {
+  decodedDigitToEncodedDigitsRecord: DecodedDigitToEncodedDigitsRecord
+): DecodedDigitToEncodedDigitsRecord => {
   const fullyDecodedDigitToEncodedDigitTuples: [string, string][] =
-    Object.entries(decodedDigitToEncodedDigitsMap)
+    Object.entries(decodedDigitToEncodedDigitsRecord)
       .filter(([decodedDigit, encodedDigits]) => encodedDigits.length === 1)
       .map(([decodedDigit, encodedDigits]) => [decodedDigit, encodedDigits[0]]);
 
-  return mapTuplesToDictionary(
-    Object.entries(decodedDigitToEncodedDigitsMap).map(
+  return mapTuplesToRecord(
+    Object.entries(decodedDigitToEncodedDigitsRecord).map(
       ([decodedDigit, encodedDigits]) => {
         const encodedDigitsForOtherFullyDecodedDigits: string[] =
           fullyDecodedDigitToEncodedDigitTuples
@@ -197,19 +198,19 @@ const filterOutEncodedDigitsForFullyDecodedDigits = (
 
 const mapEncodedDigitsToDecodedDigits = (
   digits: string,
-  encodedDigitToDecodedDigitMap: EncodedDigitToDecodedDigitMap
+  encodedDigitToDecodedDigitRecord: EncodedDigitToDecodedDigitRecord
 ): string => {
   return digits
     .split("")
-    .map((digit) => encodedDigitToDecodedDigitMap[digit])
+    .map((digit) => encodedDigitToDecodedDigitRecord[digit])
     .join("");
 };
 
 const mapDecodedDigitsToNumber = (digits: string): number => {
-  return DecodedDigitsToNumberDictionary[digits.split("").sort().join("")];
+  return DecodedDigitsToNumberRecord[digits.split("").sort().join("")];
 };
 
-const mapTuplesToDictionary = <V>(tuples: [string, V][]): Record<string, V> => {
+const mapTuplesToRecord = <V>(tuples: [string, V][]): Record<string, V> => {
   return tuples.reduce(
     (dictionary: Record<string, V>, [key, value]: [string, V]) => ({
       ...dictionary,

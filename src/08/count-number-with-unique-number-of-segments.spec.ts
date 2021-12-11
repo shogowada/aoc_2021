@@ -3,7 +3,7 @@ import { describe, beforeEach, it } from "mocha";
 import { expect } from "chai";
 import {
   countNumberWithUniqueNumberOfSegments,
-  sum,
+  sumDecodedNumbers,
 } from "./count-number-with-unique-number-of-segments";
 import { readTextFileSync } from "../common";
 
@@ -42,7 +42,7 @@ describe("count-number-with-unique-number-of-segments", () => {
       });
 
       it("should sum decoded numbers", () => {
-        expect(sum(input)).to.equal(expectedSum);
+        expect(sumDecodedNumbers(input)).to.equal(expectedSum);
       });
     }
   );
