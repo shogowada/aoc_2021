@@ -134,32 +134,14 @@ const reduceDecodedDigitToEncodedDigitsRecord = (
     DecodedDigitsToNumberRecord
   ).filter((decodedDigits) => decodedDigits.length === encodedDigits.length);
 
-  const commonDecodedDigits: string = decodedDigitsWithTheSameLengthList.reduce(
-    (commonDecodedDigits: string, decodedDigits: string): string => {
-      return commonDecodedDigits
-        .split("")
-        .filter((commonDecodedDigit) =>
-          decodedDigits.includes(commonDecodedDigit)
-        )
-        .join("");
-    },
-    decodedDigitsWithTheSameLengthList[0]
+  const commonDecodedDigits: string = extractCommonDigits(
+    decodedDigitsWithTheSameLengthList
   );
 
   decodedDigitToEncodedDigitsRecord = commonDecodedDigits
     .split("")
     .reduce(
-      (
-        decodedDigitToEncodedDigitsRecord: DecodedDigitToEncodedDigitsRecord,
-        decodedDigit: string
-      ): DecodedDigitToEncodedDigitsRecord => {
-        return {
-          ...decodedDigitToEncodedDigitsRecord,
-          [decodedDigit]: decodedDigitToEncodedDigitsRecord[
-            decodedDigit
-          ].filter((encodedDigit) => encodedDigits.includes(encodedDigit)),
-        };
-      },
+      reduceDecodedDigitToEncodedDigitsRecordByCommonDigit(encodedDigits),
       decodedDigitToEncodedDigitsRecord
     );
 
@@ -167,6 +149,31 @@ const reduceDecodedDigitToEncodedDigitsRecord = (
     decodedDigitToEncodedDigitsRecord
   );
 };
+
+const extractCommonDigits = (digitsList: string[]): string => {
+  return digitsList.reduce(reduceCommonDigits, digitsList[0]);
+};
+
+const reduceCommonDigits = (commonDigits: string, digits: string): string => {
+  return commonDigits
+    .split("")
+    .filter((commonDigit) => digits.includes(commonDigit))
+    .join("");
+};
+
+const reduceDecodedDigitToEncodedDigitsRecordByCommonDigit =
+  (encodedDigits: string) =>
+  (
+    decodedDigitToEncodedDigitsRecord: DecodedDigitToEncodedDigitsRecord,
+    decodedDigit: string
+  ): DecodedDigitToEncodedDigitsRecord => {
+    return {
+      ...decodedDigitToEncodedDigitsRecord,
+      [decodedDigit]: decodedDigitToEncodedDigitsRecord[decodedDigit].filter(
+        (encodedDigit) => encodedDigits.includes(encodedDigit)
+      ),
+    };
+  };
 
 const filterOutEncodedDigitsForFullyDecodedDigits = (
   decodedDigitToEncodedDigitsRecord: DecodedDigitToEncodedDigitsRecord
