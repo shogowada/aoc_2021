@@ -51,24 +51,14 @@ const InitialDecodedDigitToEncodedDigitsMap = Digits.reduce(
 );
 
 const mapRowToNumber = (inputRow: string): number => {
-  const [inputDigitsRow, outputDigitsRow] = inputRow.split("|");
-  const outputDigitsList: string[] = outputDigitsRow
-    .split(" ")
-    .map((digits) => digits.trim())
-    .filter((digits) => digits);
-  const encodedDigitsList: string[] = [
-    ...inputDigitsRow
-      .split(" ")
-      .map((digits) => digits.trim())
-      .filter((digits) => digits),
-    ...outputDigitsList,
-  ];
+  const { encodedDigitsList, resultDigitsList } =
+    mapToResultDigitsListAndEncodedDigitsList(inputRow);
 
   const encodedDigitToDecodedDigitMap: EncodedDigitToDecodedDigitMap =
     decodeDigits(encodedDigitsList);
 
   return Number(
-    outputDigitsList
+    resultDigitsList
       .map((encodedDigits) =>
         mapEncodedDigitsToDecodedDigits(
           encodedDigits,
@@ -80,34 +70,59 @@ const mapRowToNumber = (inputRow: string): number => {
   );
 };
 
+const mapToResultDigitsListAndEncodedDigitsList = (inputRow: string) => {
+  const [inputDigitsRow, outputDigitsRow] = inputRow.split("|");
+
+  const resultDigitsList: string[] = outputDigitsRow
+    .split(" ")
+    .map((digits) => digits.trim())
+    .filter((digits) => digits);
+
+  const encodedDigitsList: string[] = [
+    ...inputDigitsRow
+      .split(" ")
+      .map((digits) => digits.trim())
+      .filter((digits) => digits),
+    ...resultDigitsList,
+  ];
+
+  return { resultDigitsList, encodedDigitsList };
+};
+
 const decodeDigits = (
   encodedDigitsList: string[],
   decodedDigitToEncodedDigitsMap: DecodedDigitToEncodedDigitsMap = InitialDecodedDigitToEncodedDigitsMap
 ): EncodedDigitToDecodedDigitMap => {
-  if (
-    Object.values(decodedDigitToEncodedDigitsMap).every(
-      (encodedDigits) => encodedDigits.length === 1
-    )
-  ) {
-    return Object.entries(decodedDigitToEncodedDigitsMap).reduce(
-      (
-        encodedDigitToDecodedDigitMap: EncodedDigitToDecodedDigitMap,
-        [decodedDigit, encodedDigits]
-      ) => ({
-        ...encodedDigitToDecodedDigitMap,
-        [encodedDigits[0]]: decodedDigit,
-      }),
-      {}
-    );
+  const fullyDecoded: boolean = Object.values(
+    decodedDigitToEncodedDigitsMap
+  ).every((encodedDigits) => encodedDigits.length === 1);
+
+  if (fullyDecoded) {
+    return createEncodedDigitToDecodedDigitMap(decodedDigitToEncodedDigitsMap);
   } else {
-    return decodeDigits(
-      encodedDigitsList,
+    const nextDecodedDigitToEncodedDigitsMap: DecodedDigitToEncodedDigitsMap =
       encodedDigitsList.reduce(
         reduceDecodedDigitToEncodedDigitsMap,
         decodedDigitToEncodedDigitsMap
-      )
-    );
+      );
+
+    return decodeDigits(encodedDigitsList, nextDecodedDigitToEncodedDigitsMap);
   }
+};
+
+const createEncodedDigitToDecodedDigitMap = (
+  decodedDigitToEncodedDigitsMap: DecodedDigitToEncodedDigitsMap
+): EncodedDigitToDecodedDigitMap => {
+  return Object.entries(decodedDigitToEncodedDigitsMap).reduce(
+    (
+      encodedDigitToDecodedDigitMap: EncodedDigitToDecodedDigitMap,
+      [decodedDigit, encodedDigits]
+    ) => ({
+      ...encodedDigitToDecodedDigitMap,
+      [encodedDigits[0]]: decodedDigit,
+    }),
+    {}
+  );
 };
 
 const reduceDecodedDigitToEncodedDigitsMap = (
@@ -147,20 +162,37 @@ const reduceDecodedDigitToEncodedDigitsMap = (
       decodedDigitToEncodedDigitsMap
     );
 
-  Object.entries(decodedDigitToEncodedDigitsMap)
-    .filter(([decodedDigit, encodedDigits]) => encodedDigits.length === 1)
-    .forEach(([decodedDigit, encodedDigits]) => {
-      Object.keys(decodedDigitToEncodedDigitsMap)
-        .filter((thisDecodedDigit) => thisDecodedDigit !== decodedDigit)
-        .forEach((thisDecodedDigit) => {
-          decodedDigitToEncodedDigitsMap[thisDecodedDigit] =
-            decodedDigitToEncodedDigitsMap[thisDecodedDigit].filter(
-              (thisEncodedDigit) => !encodedDigits.includes(thisEncodedDigit)
-            );
-        });
-    });
+  return filterOutEncodedDigitsForFullyDecodedDigits(
+    decodedDigitToEncodedDigitsMap
+  );
+};
 
-  return decodedDigitToEncodedDigitsMap;
+const filterOutEncodedDigitsForFullyDecodedDigits = (
+  decodedDigitToEncodedDigitsMap: DecodedDigitToEncodedDigitsMap
+): DecodedDigitToEncodedDigitsMap => {
+  const fullyDecodedDigitToEncodedDigitTuples: [string, string][] =
+    Object.entries(decodedDigitToEncodedDigitsMap)
+      .filter(([decodedDigit, encodedDigits]) => encodedDigits.length === 1)
+      .map(([decodedDigit, encodedDigits]) => [decodedDigit, encodedDigits[0]]);
+
+  return mapTuplesToDictionary(
+    Object.entries(decodedDigitToEncodedDigitsMap).map(
+      ([decodedDigit, encodedDigits]) => {
+        const encodedDigitsForOtherFullyDecodedDigits: string[] =
+          fullyDecodedDigitToEncodedDigitTuples
+            .filter(([fullyDecodedDigit]) => fullyDecodedDigit !== decodedDigit)
+            .map(([fullyDecodedDigit, encodedDigit]) => encodedDigit);
+
+        return [
+          decodedDigit,
+          encodedDigits.filter(
+            (encodedDigit) =>
+              !encodedDigitsForOtherFullyDecodedDigits.includes(encodedDigit)
+          ),
+        ];
+      }
+    )
+  );
 };
 
 const mapEncodedDigitsToDecodedDigits = (
@@ -175,4 +207,14 @@ const mapEncodedDigitsToDecodedDigits = (
 
 const mapDecodedDigitsToNumber = (digits: string): number => {
   return DecodedDigitsToNumberDictionary[digits.split("").sort().join("")];
+};
+
+const mapTuplesToDictionary = <V>(tuples: [string, V][]): Record<string, V> => {
+  return tuples.reduce(
+    (dictionary: Record<string, V>, [key, value]: [string, V]) => ({
+      ...dictionary,
+      [key]: value,
+    }),
+    {}
+  );
 };
