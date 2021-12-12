@@ -8,22 +8,44 @@ interface State {
 }
 
 export const countTotalFlashes = (rows: string[], steps: number): number => {
-  const levels: number[][] = rows.map((row) => row.split("").map(Number));
+  const levels: number[][] = mapRowsToLevels(rows);
 
   return intRange(steps).reduce(stateReducer, { levels, totalFlashes: 0 })
     .totalFlashes;
 };
 
+export const countStepsToSimultaneousFlash = (rows: string[]): number => {
+  const levels: number[][] = mapRowsToLevels(rows);
+
+  let state: State = { levels, totalFlashes: 0 };
+  let prevState: State | undefined;
+
+  let steps = 0;
+  while (true) {
+    state = stateReducer(state);
+    ++steps;
+
+    if (
+      state.totalFlashes - (prevState?.totalFlashes || 0) ===
+      Dimension * Dimension
+    ) {
+      return steps;
+    }
+
+    prevState = state;
+  }
+};
+
+const mapRowsToLevels = (rows: string[]): number[][] => {
+  return rows.map((row) => row.split("").map(Number));
+};
+
 const stateReducer = ({ levels, totalFlashes }: State): State => {
   levels = addLevel(levels);
 
-  while (true) {
-    const flashes = flash(levels);
-    if (flashes) {
-      totalFlashes += flashes;
-    } else {
-      break;
-    }
+  let flashes: number;
+  while ((flashes = flash(levels))) {
+    totalFlashes += flashes;
   }
 
   return {
