@@ -3,8 +3,8 @@ const Highest = 9;
 export const calculateRiskLevel = (rowsAsString: string[]): number => {
   const rows: number[][] = mapRowsAsStringToRows(rowsAsString);
 
-  const lowPointHeights: number[] = extractLowPoints(rows).map(
-    (point) => rows[point.y][point.x]
+  const lowPointHeights: number[] = extractLowPoints(rows).map((point) =>
+    getHeight(rows, point)
   );
 
   return lowPointHeights.reduce((lhs, rhs) => lhs + rhs + 1, 0);
@@ -58,7 +58,7 @@ const isLowerThan = (
   if (isPointOutOfBounds(rows, comparedTo)) {
     return true;
   } else {
-    return rows[point.y][point.x] < rows[comparedTo.y][comparedTo.x];
+    return getHeight(rows, point) < getHeight(rows, comparedTo);
   }
 };
 
@@ -73,7 +73,7 @@ const calculateBasinSize = (
 
   if (
     isPointOutOfBounds(rows, point) ||
-    rows[point.y][point.x] === Highest ||
+    getHeight(rows, point) === Highest ||
     hasVisited
   ) {
     return 0;
@@ -109,4 +109,8 @@ const isPointOutOfBounds = (rows: number[][], point: Point) => {
     point.x < 0 ||
     point.x >= rows[point.y].length
   );
+};
+
+const getHeight = (rows: number[][], point: Point): number => {
+  return rows[point.y][point.x];
 };
