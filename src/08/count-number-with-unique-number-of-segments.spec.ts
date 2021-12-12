@@ -7,7 +7,7 @@ import {
 } from "./count-number-with-unique-number-of-segments";
 import { readTextFileSync } from "../common";
 
-describe("count-number-with-unique-number-of-segments", () => {
+describe("day 08: count-number-with-unique-number-of-segments", () => {
   [
     {
       inputFileName: "input.test.txt",
