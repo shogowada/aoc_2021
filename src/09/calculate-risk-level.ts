@@ -1,13 +1,34 @@
+const Highest = 9;
+
 export const calculateRiskLevel = (rowsAsString: string[]): number => {
-  const rows: number[][] = rowsAsString.map((rowAsString) =>
-    rowAsString.split("").map(Number)
+  const rows: number[][] = mapRowsAsStringToRows(rowsAsString);
+
+  const lowPointHeights: number[] = extractLowPoints(rows).map(
+    (point) => rows[point.y][point.x]
   );
 
-  const lowPoints: number[] = rows.flatMap((row, y: number) =>
-    row.filter((height: number, x: number) => isLowPoint(rows, { x, y }))
-  );
+  return lowPointHeights.reduce((lhs, rhs) => lhs + rhs + 1, 0);
+};
 
-  return lowPoints.reduce((lhs, rhs) => lhs + rhs + 1, 0);
+export const calculateMultiplyOfThreeLargestBasins = (
+  rowsAsString: string[]
+): number => {
+  const rows: number[][] = mapRowsAsStringToRows(rowsAsString);
+
+  const lowPoints: Point[] = extractLowPoints(rows);
+  const basinSizesInDescendingOrder: number[] = lowPoints
+    .map((point) => calculateBasinSize(rows, point))
+    .sort((lhs, rhs) => rhs - lhs);
+
+  return basinSizesInDescendingOrder
+    .slice(0, 3)
+    .reduce((multiply: number, basinSize: number): number => {
+      return multiply * basinSize;
+    });
+};
+
+const mapRowsAsStringToRows = (rowsAsString: string[]): number[][] => {
+  return rowsAsString.map((rowAsString) => rowAsString.split("").map(Number));
 };
 
 interface Point {
@@ -15,12 +36,17 @@ interface Point {
   y: number;
 }
 
+const extractLowPoints = (rows: number[][]): Point[] => {
+  return rows.flatMap((row, y: number): Point[] =>
+    row
+      .map((height: number, x: number): Point => ({ x, y }))
+      .filter((point: Point) => isLowPoint(rows, point))
+  );
+};
+
 const isLowPoint = (rows: number[][], point: Point): boolean => {
-  return (
-    isLowerThan(rows, point, { ...point, x: point.x - 1 }) &&
-    isLowerThan(rows, point, { ...point, x: point.x + 1 }) &&
-    isLowerThan(rows, point, { ...point, y: point.y - 1 }) &&
-    isLowerThan(rows, point, { ...point, y: point.y + 1 })
+  return getAdjacentPoints(point).every((adjacentPoint) =>
+    isLowerThan(rows, point, adjacentPoint)
   );
 };
 
@@ -29,14 +55,58 @@ const isLowerThan = (
   point: Point,
   comparedTo: Point
 ): boolean => {
-  if (
-    comparedTo.y < 0 ||
-    comparedTo.y >= rows.length ||
-    comparedTo.x < 0 ||
-    comparedTo.x >= rows[comparedTo.y].length
-  ) {
+  if (isPointOutOfBounds(rows, comparedTo)) {
     return true;
   } else {
     return rows[point.y][point.x] < rows[comparedTo.y][comparedTo.x];
   }
+};
+
+const calculateBasinSize = (
+  rows: number[][],
+  point: Point,
+  visitedPoints: Point[] = []
+): number => {
+  const hasVisited: boolean = visitedPoints.some(
+    (visitedPoint) => visitedPoint.x === point.x && visitedPoint.y === point.y
+  );
+
+  if (
+    isPointOutOfBounds(rows, point) ||
+    rows[point.y][point.x] === Highest ||
+    hasVisited
+  ) {
+    return 0;
+  } else {
+    visitedPoints.push(point);
+
+    const nextPointsToVisit: Point[] = getAdjacentPoints(point);
+
+    return nextPointsToVisit.reduce(
+      (basinSize: number, nextPointToVisit: Point) => {
+        return (
+          basinSize + calculateBasinSize(rows, nextPointToVisit, visitedPoints)
+        );
+      },
+      1
+    );
+  }
+};
+
+const getAdjacentPoints = (point: Point): Point[] => {
+  return [
+    { ...point, x: point.x - 1 },
+    { ...point, x: point.x + 1 },
+    { ...point, y: point.y - 1 },
+    { ...point, y: point.y + 1 },
+  ];
+};
+
+const isPointOutOfBounds = (rows: number[][], point: Point) => {
+  return (
+    point.y < 0 ||
+    point.y >= rows.length ||
+    point.x < 0 ||
+    point.x >= rows[point.y].length
+  );
 };
