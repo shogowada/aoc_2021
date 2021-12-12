@@ -69,51 +69,56 @@ export const calculateAutoCompleteScore = (rows: string[]): number => {
 };
 
 const calculateSyntaxErrorScoreForRow = (row: string): number => {
-  const characters: string[] = row.split("");
-
-  let stack: string[] = [];
-  for (let index = 0; index < characters.length; ++index) {
-    const character = characters[index];
-
-    if (OpeningCharacters.includes(character)) {
-      stack = [...stack, character];
-    } else {
-      const { openingCharacter, syntaxErrorScore } =
-        mapClosingCharacterToMetadata(character);
-      if (stack[stack.length - 1] !== openingCharacter) {
-        return syntaxErrorScore;
-      } else {
-        stack = stack.slice(0, stack.length - 1);
-      }
-    }
-  }
-
-  return 0;
+  return checkSyntax(row).syntaxErrorScore || 0;
 };
 
 const calculateAutoCompleteScoreForRow = (row: string): number => {
+  const { remainingStack, syntaxErrorScore } = checkSyntax(row);
+
+  if (syntaxErrorScore) {
+    return 0;
+  } else {
+    return remainingStack.reduceRight(
+      (score: number, openingCharacter: string): number => {
+        return score * 5 + mapOpeningCharacterToScore(openingCharacter);
+      },
+      0
+    );
+  }
+};
+
+interface CheckSyntaxResult {
+  remainingStack: string[];
+  syntaxErrorScore?: number;
+}
+
+const checkSyntax = (row: string): CheckSyntaxResult => {
   const characters: string[] = row.split("");
 
-  let stack: string[] = [];
-  for (let index = 0; index < characters.length; ++index) {
-    const character = characters[index];
+  return characters.reduce(checkSyntaxResultReducer, {
+    remainingStack: [],
+  });
+};
 
-    if (OpeningCharacters.includes(character)) {
-      stack = [...stack, character];
+const checkSyntaxResultReducer = (
+  { remainingStack, syntaxErrorScore }: CheckSyntaxResult,
+  character: string
+): CheckSyntaxResult => {
+  if (syntaxErrorScore) {
+    return { remainingStack, syntaxErrorScore };
+  } else if (OpeningCharacters.includes(character)) {
+    return {
+      remainingStack: [...remainingStack, character],
+    };
+  } else {
+    const { openingCharacter, syntaxErrorScore } =
+      mapClosingCharacterToMetadata(character);
+    if (remainingStack[remainingStack.length - 1] !== openingCharacter) {
+      return { remainingStack, syntaxErrorScore };
     } else {
-      const { openingCharacter } = mapClosingCharacterToMetadata(character);
-      if (stack[stack.length - 1] !== openingCharacter) {
-        return 0;
-      } else {
-        stack = stack.slice(0, stack.length - 1);
-      }
+      return {
+        remainingStack: remainingStack.slice(0, remainingStack.length - 1),
+      };
     }
   }
-
-  return stack.reduceRight(
-    (score: number, openingCharacter: string): number => {
-      return score * 5 + mapOpeningCharacterToScore(openingCharacter);
-    },
-    0
-  );
 };
