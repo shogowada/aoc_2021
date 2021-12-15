@@ -49,6 +49,25 @@ const findNextCaves = (connections: Connection[], prevPath: Path): string[] => {
 
   const visitedSmallCaves: string[] = prevPath.filter(isSmallCave);
 
+  const smallCaveToVisitedCountDictionary: Record<string, number> = prevPath
+    .filter(isSmallCave)
+    .reduce(
+      (
+        smallCaveToVisitedCountDictionary: Record<string, number>,
+        smallCave: string
+      ) => {
+        return {
+          ...smallCaveToVisitedCountDictionary,
+          [smallCave]: (smallCaveToVisitedCountDictionary[smallCave] || 0) + 1,
+        };
+      },
+      {}
+    );
+
+  const hasVisitedAnySmallCaveTwice: boolean = Object.values(
+    smallCaveToVisitedCountDictionary
+  ).some((count) => count >= 2);
+
   return connections
     .map((connection) => {
       if (connection.a === lastCave) {
@@ -60,7 +79,13 @@ const findNextCaves = (connections: Connection[], prevPath: Path): string[] => {
       }
     })
     .filter(isNonNull)
-    .filter((cave) => !visitedSmallCaves.includes(cave));
+    .filter((cave) => {
+      if (hasVisitedAnySmallCaveTwice) {
+        return !visitedSmallCaves.includes(cave);
+      } else {
+        return true;
+      }
+    });
 };
 
 const isSmallCave = (cave: string): cave is Lowercase<string> =>
